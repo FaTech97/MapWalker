@@ -19,15 +19,16 @@ import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class MapActivity extends Activity implements OnMapReadyCallback, RoutingListener {
 
     private GoogleMap googleMap;
     private Bundle argumentsFromMainPage;
-    private LatLng address;
+    private LatLng startPoint;
+    private LatLng endPoint;
     private List<Polyline> polylines;
     private static final int[] COLORS = new int[]{R.color.primary_dark_material_light};
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +50,7 @@ public class MapActivity extends Activity implements OnMapReadyCallback, Routing
         googleMap = map;
         try {
             argumentsFromMainPage = getIntent().getExtras();
-            address = (LatLng) argumentsFromMainPage.get("position");
+            startPoint = (LatLng) argumentsFromMainPage.get("position");
             moveCamera();
         } catch (Exception e) {
             Toast toast = Toast.makeText(this, "Ошибка определения локации" + e.toString(), Toast.LENGTH_LONG);
@@ -58,48 +59,57 @@ public class MapActivity extends Activity implements OnMapReadyCallback, Routing
     }
 
     private void moveCamera() {
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(address, 18));
-        makePolyline();
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startPoint, 18));
+        calculateEndPoint();
+    }
+
+    private void calculateEndPoint() {
+        try {
+            int distance = (int) argumentsFromMainPage.get("distance");
+            float z = (float) (distance * 0.009009); // Because 1 latitube = 1 longitube = 111 km => 1 km = 0,009009 lat.
+            float x = (float) (Math.random() * z);
+            float y = (float) Math.sqrt(Math.pow(z, 2) - Math.pow(x, 2));
+            float endLatitube = (float) (Math.random() > 0.5 ? startPoint.latitude + x : startPoint.latitude - x);
+            float endLongitube = (float) (Math.random() > 0.5 ? startPoint.longitude + y : startPoint.longitude - y);
+            endPoint = new LatLng(endLatitube, endLongitube);
+            makePolyline();
+        } catch (Exception e) {
+            Toast.makeText(this, "Ошибка нахождения конечной точки\n" + e.toString(), Toast.LENGTH_LONG).show();
+        }
     }
 
     private void makePolyline() {
-        LatLng end = new LatLng(55.751244, 37.618423);
         Routing routing = new Routing.Builder()
                 .travelMode(Routing.TravelMode.WALKING)
                 .withListener(this)
-                .waypoints(address,end)
+                .waypoints(startPoint, endPoint)
                 .build();
         routing.execute();
     }
 
     @Override
     public void onRoutingSuccess(ArrayList<Route> route, int shortestRouteIndex) {
-        if(polylines.size()>0) {
+        if (polylines.size() > 0) {
             for (Polyline poly : polylines) {
                 poly.remove();
             }
         }
 
         polylines = new ArrayList<>();
-        //add route(s) to the map.
-        for (int i = 0; i <route.size(); i++) {
-            //In case of more than 5 alternative routes
-            int colorIndex = i % COLORS.length;
-            PolylineOptions polyOptions = new PolylineOptions();
-            polyOptions.color(getResources().getColor(COLORS[colorIndex]));
-            polyOptions.width(10 + i * 3);
-            polyOptions.addAll(route.get(i).getPoints());
-            Polyline polyline = googleMap.addPolyline(polyOptions);
-            polylines.add(polyline);
-            Toast.makeText(getApplicationContext(),"Путь "+ (i+1) +": расстояние - "+ route.get(i).getDistanceValue()/1000 + " км",Toast.LENGTH_SHORT).show();
-        }
+        PolylineOptions polyOptions = new PolylineOptions();
+        polyOptions.color(R.color.primary_dark_material_light);
+        polyOptions.width(10);
+        polyOptions.addAll(route.get(0).getPoints());
+        Polyline polyline = googleMap.addPolyline(polyOptions);
+        polylines.add(polyline);
+        Toast.makeText(getApplicationContext(), "Расстояние - " + route.get(0).getDistanceValue()/1000 + " км", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onRoutingFailure(RouteException e) {
-        if(e != null) {
+        if (e != null) {
             Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-        }else {
+        } else {
             Toast.makeText(this, "Something went wrong, Try again", Toast.LENGTH_SHORT).show();
         }
     }
