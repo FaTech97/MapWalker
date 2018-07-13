@@ -3,6 +3,7 @@ package com.fatech.mapwalker;
 import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.view.Window;
 import android.widget.Toast;
 
 import com.directions.route.Route;
@@ -14,6 +15,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
@@ -50,7 +52,10 @@ public class MapActivity extends Activity implements OnMapReadyCallback, Routing
         googleMap = map;
         try {
             argumentsFromMainPage = getIntent().getExtras();
-            startPoint = (LatLng) argumentsFromMainPage.get("position");
+            startPoint = (LatLng) argumentsFromMainPage.get("start");
+            googleMap.addMarker(new MarkerOptions()
+                    .position(startPoint)
+                    .title("Start"));
             moveCamera();
         } catch (Exception e) {
             Toast toast = Toast.makeText(this, "Ошибка определения локации" + e.toString(), Toast.LENGTH_LONG);
@@ -72,6 +77,9 @@ public class MapActivity extends Activity implements OnMapReadyCallback, Routing
             float endLatitube = (float) (Math.random() > 0.5 ? startPoint.latitude + x : startPoint.latitude - x);
             float endLongitube = (float) (Math.random() > 0.5 ? startPoint.longitude + y : startPoint.longitude - y);
             endPoint = new LatLng(endLatitube, endLongitube);
+            googleMap.addMarker(new MarkerOptions()
+                    .position(endPoint)
+                    .title("Finish"));
             makePolyline();
         } catch (Exception e) {
             Toast.makeText(this, "Ошибка нахождения конечной точки\n" + e.toString(), Toast.LENGTH_LONG).show();
