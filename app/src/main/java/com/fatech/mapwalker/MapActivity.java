@@ -18,6 +18,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -27,12 +28,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static com.fatech.mapwalker.FinishDialog.errorDialog;
 
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback, RoutingListener {
 
-    private GoogleMap googleMap;
+    private static GoogleMap googleMap;
     private Bundle argumentsFromMainPage;
+    private static Marker imHereMarker;
     private LatLng startPoint;
     private LatLng endPoint;
     private List<Polyline> polylines;
@@ -63,12 +64,18 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     .position(startPoint)
                     .title("Start")
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.start_marker_icon_50)));
-            moveCamera();
+            firstSetHereMarker();
         } catch (Exception e) {
             Toast toast = Toast.makeText(this, "Ошибка определения локации" + e.toString(), Toast.LENGTH_LONG);
             toast.show();
         }
     }
+
+    private void firstSetHereMarker() {
+        imHereMarker = googleMap.addMarker(new MarkerOptions().position(startPoint));
+        moveCamera();
+    }
+
 
     private void moveCamera() {
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(startPoint, 18));
@@ -120,6 +127,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         polylines.add(polyline);
         Toast.makeText(getApplicationContext(), "Расстояние - " + route.get(0).getDistanceValue()/1000 + " км", Toast.LENGTH_SHORT).show();
        // setFinishDialog(route.get(0).getDistanceValue()/1000);
+    }
+
+    public static void setHereMarker(LatLng imHere){
+        imHereMarker.remove();
+        imHereMarker = googleMap.addMarker(new MarkerOptions().position(imHere));
     }
 
    /* private void setFinishDialog(int distance) {

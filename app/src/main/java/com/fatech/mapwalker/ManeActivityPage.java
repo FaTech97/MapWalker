@@ -2,17 +2,13 @@ package com.fatech.mapwalker;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.Address;
-import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 import android.widget.Button;
@@ -22,10 +18,9 @@ import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
 
-import java.io.IOException;
-
 public class ManeActivityPage extends Activity {
 
+    public LocationListener locationListener = new LocListener(new LatLng(0,0));
     private Button toPage2Button;
     private Button geolocationButton;
     private Intent intentMapPage;
@@ -89,6 +84,7 @@ public class ManeActivityPage extends Activity {
             startPoint = new LatLng(locationOnMap.getLatitude(), locationOnMap.getLongitude());
             TextView geolocationTextView = findViewById(R.id.geolocationTextView);
             geolocationTextView.setText(startPoint.toString());
+
             valueFrominput();
         } catch (Exception e) {
             Toast.makeText(this, "Что-то не так со startPoint " + locationOnMap.toString(), Toast.LENGTH_LONG).show();
@@ -118,25 +114,25 @@ public class ManeActivityPage extends Activity {
         }
     }
 
-    private LocationListener locationListener = new LocationListener() {
-
-        @Override
-        public void onLocationChanged(Location location) {
-            getLocation(location);
-        }
-
-        @Override
-        public void onProviderDisabled(String provider) {
-        }
-
-        @Override
-        public void onProviderEnabled(String provider) {
-        }
-
-        @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {
-        }
-    };
+//    private LocationListener locationListener = new LocationListener() {
+//
+//        @Override
+//        public void onLocationChanged(Location location) {
+//            getLocation(location);
+//        }
+//
+//        @Override
+//        public void onProviderDisabled(String provider) {
+//        }
+//
+//        @Override
+//        public void onProviderEnabled(String provider) {
+//        }
+//
+//        @Override
+//        public void onStatusChanged(String provider, int status, Bundle extras) {
+//        }
+//    };
 
 
 }
