@@ -19,16 +19,13 @@ import android.widget.Toast;
 import com.google.android.gms.maps.model.LatLng;
 
 public class ManeActivityPage extends Activity {
-
-    public LocationListener locationListener = new LocListener(new LatLng(0,0));
-    private Button toPage2Button;
+    private LocationManager locationManager;
     private Button geolocationButton;
+    private Location locationOnMap;
+    private Button toPage2Button;
     private Intent intentMapPage;
     private int distance;
-    int condCode = 0;
     private LatLng startPoint;
-    private LocationManager locationManager;
-    private Location locationOnMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,59 +35,60 @@ public class ManeActivityPage extends Activity {
     }
 
     private void setLocationSetting() {
-        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, "Permission failed", Toast.LENGTH_SHORT).show();
-            return;
-        } else {
-            try {
+        try {
+            locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+            if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Permission failed", Toast.LENGTH_SHORT).show();
+                return;
+            } else {
                 locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
                         1000 * 10, 10, locationListener);
                 locationManager.requestLocationUpdates(
                         LocationManager.NETWORK_PROVIDER, 1000 * 10, 10,
                         locationListener);
                 setButtonLisners();
-            } catch (Exception e) {
-                Toast.makeText(this, "Error" + e.toString(), Toast.LENGTH_LONG).show();
             }
+        } catch (Exception e) {
+            Toast.makeText(this, "Не удалось получить месторасположение", Toast.LENGTH_LONG).show();
         }
     }
 
-
     private void setButtonLisners() {
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, "Permission failed", Toast.LENGTH_SHORT).show();return;
-        } else {
-            geolocationButton = (Button) findViewById(R.id.geolocationButton);
-            geolocationButton.setOnClickListener(new View.OnClickListener() {
-                @SuppressLint("MissingPermission")
+        try {
+            if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Permission failed", Toast.LENGTH_SHORT).show();
+                return;
+            } else {
+                geolocationButton = (Button) findViewById(R.id.geolocationButton);
+                geolocationButton.setOnClickListener(new View.OnClickListener() {
+                    @SuppressLint("MissingPermission")
+                    public void onClick(View v) {
+                        getLocation(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
+                    }
+                });
+            }
+            toPage2Button = (Button) findViewById(R.id.toPage2Button);
+            toPage2Button.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
-                    getLocation(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
+                    valueFrominput();
                 }
             });
+        } catch (Exception e){
+            Toast.makeText(this,"Error 0X001",Toast.LENGTH_LONG).show();
         }
-        toPage2Button = (Button) findViewById(R.id.toPage2Button);
-        toPage2Button.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                valueFrominput();
-            }
-        });
     }
 
     private void getLocation(Location location) {
-        condCode += 1;
         try {
             locationOnMap = location;
             startPoint = new LatLng(locationOnMap.getLatitude(), locationOnMap.getLongitude());
             TextView geolocationTextView = findViewById(R.id.geolocationTextView);
             geolocationTextView.setText(startPoint.toString());
-
             valueFrominput();
         } catch (Exception e) {
             Toast.makeText(this, "Что-то не так со startPoint " + locationOnMap.toString(), Toast.LENGTH_LONG).show();
         }
     }
-
 
     private void valueFrominput() {
         try {
@@ -109,43 +107,27 @@ public class ManeActivityPage extends Activity {
             intentMapPage.putExtra("distance", distance);
             startActivity(intentMapPage);
         } catch (Exception e) {
-            Toast toast = Toast.makeText(this, "Не получилось открыть карты", Toast.LENGTH_LONG);
-            toast.show();
+            Toast.makeText(this, "Не получилось открыть карты", Toast.LENGTH_LONG).show();
         }
     }
 
-//    private LocationListener locationListener = new LocationListener() {
-//
-//        @Override
-//        public void onLocationChanged(Location location) {
-//            getLocation(location);
-//        }
-//
-//        @Override
-//        public void onProviderDisabled(String provider) {
-//        }
-//
-//        @Override
-//        public void onProviderEnabled(String provider) {
-//        }
-//
-//        @Override
-//        public void onStatusChanged(String provider, int status, Bundle extras) {
-//        }
-//    };
+    //Object for locationManager
+    private LocationListener locationListener = new LocationListener() {
 
+        @Override
+        public void onLocationChanged(Location location) {
+        }
 
+        @Override
+        public void onProviderDisabled(String provider) {
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+        }
+    };
 }
-
-
-//    private void searchPosition(String location) {
-//        try {
-//            Geocoder geocoder = new Geocoder(this);
-//            Address address = geocoder.getFromLocationName(location, 1).get(0);
-//            positionOnMap = new LatLng(address.getLatitude(), address.getLongitude());
-//            toPage2();
-//        } catch (IOException e) {
-//            Toast toast = Toast.makeText(this, "Не нашли место на карте", Toast.LENGTH_LONG);
-//            toast.show();
-//        }
-//    }

@@ -8,11 +8,14 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class LocListener implements android.location.LocationListener {
-
     private LatLng imHere;
 
     public LocListener(LatLng latLng) {
         imHere = latLng;
+    }
+
+    public LatLng getImHere() {
+        return imHere;
     }
 
     @Override
